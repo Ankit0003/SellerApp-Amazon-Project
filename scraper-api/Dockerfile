@@ -1,8 +1,8 @@
 FROM golang:1.15.6-alpine
 
-LABEL maintainer="Vague Coder <vaguecoder0to.n@gmail.com>"
+LABEL maintainer="Ankit Kumar <ankitkumar0000333@gmail.com>"
 
-WORKDIR $GOPATH/src/github.com/VagueCoder/Amazon-Scraper-Collector/scraper-api
+WORKDIR $GOPATH/src/github.com/Ankit0003/SellerApp-Project/scraper-api
 
 COPY . .
 

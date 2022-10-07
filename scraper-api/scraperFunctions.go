@@ -56,22 +56,9 @@ func getDesc(document *goquery.Document) string {
 
 func getPrice(document *goquery.Document) string {
 	var price string
-	pattern, _:= regexp.Compile("(\\$[,0-9]*(\\.)([0-9])+)")
-
-	price = document.Find("span#priceblock_ourprice").First().Text()
-
-	if !pattern.Match([]byte(price)) {
-		str := document.Find("ul.a-unordered-list").First().Find("li#edition_0").First().Find("span.a-size-mini").Text()
-		temp := pattern.FindAllString(str, 1)
-		if len(temp) > 1 {
-			price = temp[0]
-		}
-	}
-
-	if !pattern.Match([]byte(price)) {
-		html, _ := document.Html()
-		price = pattern.FindString(string(html))
-	}
+	h1 := document.Find("div#a-section a-spacing-none a-padding-none").First()
+	price = h1.Find("span#a-color-price").Text()
+	price = strings.TrimSpace(price)
 
 	if price != "" {
 		return price

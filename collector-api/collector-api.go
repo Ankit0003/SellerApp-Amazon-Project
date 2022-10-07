@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-type Inner struct {
+type ProductDetails struct {
 	Name			string	`json:"name,omitempty" bson:"name,omitempty"`
 	ImageURL		string	`json:"imageURL,omitempty" bson:"imageURL,omitempty"`
 	Desc			string	`json:"description,omitempty" bson:"description,omitempty"`
@@ -20,10 +20,10 @@ type Inner struct {
 	TotalReviews	int		`json:"totalReviews,omitempty" bson:"totalReviews,omitempty"`
 }
 
-type Outer struct {
+type ProductURL struct {
 	ID		primitive.ObjectID	`json:"_id,omitempty" bson:"_id,omitempty"`
 	URL		string				`json:"url,omitempty" bson:"url,omitempty"`
-	Product	Inner				`json:"product,omitempty" bson:"product,omitempty"`
+	Product	ProductDetails				`json:"product,omitempty" bson:"product,omitempty"`
 	LastUpdate	time.Time		`json:"last_update, omitempty" bson:"last_update, omitempty"`
 }
 
@@ -31,7 +31,7 @@ var client *mongo.Client
 
 func CheckDocument(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("content-type", "application/json")
-	var new_doc, existing_doc Outer
+	var new_doc, existing_doc ProductURL
 	_ = json.NewDecoder(request.Body).Decode(&new_doc)
 	collection := client.Database("amazondb").Collection("amazoncollection")
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -63,7 +63,7 @@ func CheckDocument(response http.ResponseWriter, request *http.Request) {
 
 func SelectAllDocuments(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("content-type", "application/json")
-	var docs []Outer
+	var docs []ProductURL
 	collection := client.Database("amazondb").Collection("amazoncollection")
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	
@@ -75,7 +75,7 @@ func SelectAllDocuments(response http.ResponseWriter, request *http.Request) {
 	}
 	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
-		var doc Outer
+		var doc ProductURL
 		cursor.Decode(&doc)
 		docs = append(docs, doc)
 	}

@@ -13,7 +13,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type Inner struct {
+type ProductDetails struct {
 	Name			string	`json:"name,omitempty"`
 	ImageURL		string	`json:"imageURL,omitempty"`
 	Desc			string	`json:"description,omitempty"`
@@ -21,9 +21,9 @@ type Inner struct {
 	TotalReviews	int		`json:"totalReviews,omitempty"`
 }
 
-type Outer struct {
+type ProductURL struct {
 	URL				string	`json:"url,omitempty"`
-	Product			Inner	`json:"product,omitempty"`
+	Product			ProductDetails	`json:"product,omitempty"`
 }
 
 type StatusObject struct {
@@ -32,7 +32,7 @@ type StatusObject struct {
     ModifiedCount	int		`json:"ModifiedCount,omitempty"`
 }
 
-func scraper(url string) Outer {
+func scraper(url string) ProductURL {
 	client := &http.Client{
         Timeout: 30 * time.Second,
 	}
@@ -48,18 +48,19 @@ func scraper(url string) Outer {
 		log.Fatal("Failed at getting list's goquery body, ", err)
 	}
 
-	inner := Inner{
+	productDetails := ProductDetails{
 		Name:			getName(document),
 		ImageURL:		getImageURL(document),
 		Desc:			getDesc(document),
 		Price:			getPrice(document),
 		TotalReviews:	getTotalReviews(document),
 	}
-	outer := Outer{
+	//log.Fatal("product name -->", productDetails.Name)
+	productURL := ProductURL{
 		URL: 		url,
-		Product:	inner,
+		Product:	productDetails,
 	}
-	return outer
+	return productURL
 }
 
 func getFunc(w http.ResponseWriter, r *http.Request){
@@ -69,7 +70,7 @@ func getFunc(w http.ResponseWriter, r *http.Request){
 
 func postFunc(writer http.ResponseWriter, request *http.Request){
 	decoder := json.NewDecoder(request.Body)
-	form_data := Outer{}
+	form_data := ProductURL{}
 	err := decoder.Decode(&form_data)
     if err != nil {
         panic(err)
@@ -78,6 +79,8 @@ func postFunc(writer http.ResponseWriter, request *http.Request){
 	form_data = scraper(form_data.URL)
 	
 	product_details, err := json.Marshal(form_data)
+
+	//log.Fatal("product_details-->",string(product_details))
 	if err != nil {
 		log.Fatal("json.Marshal failed due to the error:", err)
 	}
@@ -86,7 +89,9 @@ func postFunc(writer http.ResponseWriter, request *http.Request){
     requestObject, err := http.NewRequest("POST", collector_url, bytes.NewBuffer(product_details))
     requestObject.Header.Set("content-type", "application/json")
 
+	//log.Fatal("Request object --->", requestObject)
     client := &http.Client{}
+
     response, err := client.Do(requestObject)
     if err != nil {
         panic(err)
